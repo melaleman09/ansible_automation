@@ -1,60 +1,120 @@
-# ansible_automation
-This repository documents the installation and initial configuration of an
-Ansible control node on a RHEL-based system. It includes installing required
-packages, verifying connectivity, configuring SSH, and creating an Ansible
-inventory.
-## Requirements
+~~~bash
+.
 
-## Repository Structure
----
-ansible_automation
-  |-inventory.example
-  |-ansible.cfg
-  |-playbooks
-      |-user_and_SSH_setup.yml
+## Install Ansible (Control Node)
+## Install EPEL and Ansible Core:
 
-## Install
-ansible-core and epel-release
-verify:
-rpm -q epel-release
+sudo dnf install -y epel-release
+sudo dnf install -y ansible-core
+
+
+## Verify installation:
 ansible --version
 
-## SSH Configuration file
-vim /etc/ssh/sshd_config 
-PermitRootLogin yes
+## Map IP Addresses to Hostnames (Control Node)
+Edit the hosts file:
+sudo vim /etc/hosts
+Example:
 
-## Add SSH service to firewall
-firewall-cmd --add-service=ssh --perm
-
-## Confirm ssh service active and enabled
-systemctl status sshd
-systemctl enable --now sshd
-systemctl restart sshd
-systemctl status sshd
-
-## Ansible Inventory
-vim /etc/ansible/hosts
-[webservers]
-servera 
-serverb
-
-## Map IP Addresses to host names
 192.168.12.x servera
 192.168.12.x serverb
 
-ssh-keygen fron controlnode, generate a public key
-ssh-copy-id servera type yes and enter for passphrase and enter again
-ssh-copy-id serverb type yes and enter for passphrase and enter again
+## Verify Network Connectivity
+From the control node:
 
-ssh servera to test without need for password
-ssh serverb to test without need for password
+ping -c 4 servera
+ping -c 4 serverb
 
-## Check Connectivity
-Verify with Ansible Ping
-ansible all -m ping
+## Repository Structure
+
+Ansible_automation/
+├── ansible.cfg
+├── inventory.example
+├── playbooks/
+│   ├── User_and_SSH_Setup.yml
+│   └── useradd.yml
+└── README.md
+
+## SSH Installation and Configuration (Managed Hosts)
+Check if SSH is installed
+rpm -q openssh-server
+
+## Install SSH if not present
+sudo dnf install -y openssh-server
+
+## Configure Firewall for SSH
+Check current firewall settings:
+
+sudo firewall-cmd --list-all
+
+## Add SSH service if not present:
+
+sudo firewall-cmd --add-service=ssh --permanent
+sudo firewall-cmd --reload
+
+## Verify SSH is allowed:
+
+sudo firewall-cmd --list-all
+
+## Enable and Start SSH
+sudo systemctl enable --now sshd
+sudo systemctl status sshd
+
+## SSH Configuration
+Edit the SSH configuration file:
+
+sudo vim /etc/ssh/sshd_config
+Example setting:
+
+PermitRootLogin yes
+⚠️ Allowing root login is not recommended in production environments.
+
+## Restart SSH to apply changes:
+
+sudo systemctl restart sshd
+
+## Ansible Inventory Configuration
+Edit the inventory file:
+
+sudo vim /etc/ansible/hosts
+Example:
+
+[webservers]
+servera
+serverb
+Hostnames are examples and should be replaced with real target systems.
+
+## SSH Key Authentication
+Generate SSH key on the control node
+ssh-keygen
+
+## Copy public key to managed hosts
+ssh-copy-id servera
+ssh-copy-id serverb
+
+## Verify passwordless SSH access
+ssh servera
+ssh serverb
+
+## Verify Ansible Connectivity
+Test Ansible connectivity:
+
+ansible webservers -m ping
 Expected output:
+
 ping: pong
 
+## Playbooks
+useradd.yml
+
+This playbook ensures a Linux user account exists on all hosts in the webservers inventory group.
+It creates the user and ensures a home directory exists.
+Location:
+
+/playbooks/useradd.yml
+Run example:
+
+ansible-playbook -i inventory.example playbooks/useradd.yml
 
 
 
