@@ -27,7 +27,7 @@ ping -c 4 serverb
 
 ## Repository Structure
 
-Ansible_automation/
+root/ansible_automation/
 ├── ansible.cfg
 ├── inventory.example
 ├── playbooks/
