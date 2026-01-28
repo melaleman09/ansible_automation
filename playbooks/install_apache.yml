@@ -1,0 +1,10 @@
+---
+- name: Install Apache on finance servers
+  hosts: finance
+  become: yes
+
+  tasks:
+    - name: Install Apache using dnf
+      dnf:
+        name: httpd
+        state: present

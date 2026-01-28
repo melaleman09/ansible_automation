@@ -1,0 +1,10 @@
+---
+- name: Install NFS utilities on finance servers
+  hosts: finance
+  become: yes
+
+  tasks:
+    - name: Install nfs-utils using dnf
+      dnf:
+        name: nfs-utils
+        state: present

@@ -1,0 +1,5 @@
+
+
+[webservers]
+ansible_hosts=servera
+ansible_hosts=serverb

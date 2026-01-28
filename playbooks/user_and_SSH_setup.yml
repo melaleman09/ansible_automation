@@ -1,0 +1,43 @@
+---
+- name: User and SSH management playbook
+  hosts: all
+  become: yes
+
+  vars:
+    admin_user: tom
+
+  tasks:
+    - name: Ensure admin user exists
+      user:
+        name: "{{ admin_user }}"
+        groups: wheel
+        append: yes
+        state: present
+        create_home: yes
+
+    - name: Create .ssh directory for user
+      file:
+        path: "/home/{{ admin_user }}/.ssh"
+        state: directory
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+        mode: '0700'
+
+    - name: Add authorized SSH key for user
+      ansible.posix.authorized_key:
+        user: "{{ admin_user }}"
+        state: present
+        key: "{{ lookup('file', 'files/tom_id_rsa.pub') }}"
+
+    - name: Disable root SSH login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+        backup: yes
+
+    - name: Restart SSH service
+      systemd:
+        name: sshd
+        state: restarted
